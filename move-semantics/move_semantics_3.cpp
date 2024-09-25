@@ -190,4 +190,7 @@ TEST_CASE("default special functions")
     DataSet ds2 = ds1;
     std::cout << "----\n";
     DataSet ds3 = std::move(ds2);
+
+    Data arg_ds{"arg_ds", {74, 6, 456, 56}};
+    DataSet ds4(999, "DataSet#2", arg_ds);
 }
