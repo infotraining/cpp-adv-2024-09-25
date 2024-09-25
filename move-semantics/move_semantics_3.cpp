@@ -50,7 +50,7 @@ public:
     }
 
     // move constructor
-    Data(Data&& other) : name_(std::move(other.name_)), data_(other.data_), size_(other.size_)
+    Data(Data&& other) noexcept : name_(std::move(other.name_)), data_(other.data_), size_(other.size_)
     {
         other.data_ = nullptr;
         other.size_ = 0;
@@ -59,7 +59,7 @@ public:
     }
 
     // move assignment
-    Data& operator=(Data&& other)
+    Data& operator=(Data&& other) noexcept
     {
         if (this != &other)
         {
@@ -82,7 +82,7 @@ public:
         return *this;
     }
 
-    ~Data()
+    ~Data() noexcept
     {
         delete[] data_;
     }
@@ -94,22 +94,22 @@ public:
         std::swap(size_, other.size_);
     }
 
-    iterator begin()
+    iterator begin() noexcept
     {
         return data_;
     }
 
-    iterator end()
+    iterator end() noexcept
     {
         return data_ + size_;
     }
 
-    const_iterator begin() const
+    const_iterator begin() const noexcept
     {
         return data_;
     }
 
-    const_iterator end() const
+    const_iterator end() const noexcept
     {
         return data_ + size_;
     }
@@ -117,7 +117,10 @@ public:
 
 Data create_data_set()
 {
-    Data ds{"data-set-one", {54, 6, 34, 235, 64356, 235, 23}};
+    static int id_gen = 0;
+    const int id = ++id_gen;
+
+    Data ds{"Data#" + std::to_string(id), {54, 6, 34, 235, 64356, 235, 23}};
 
     return ds;
 }
@@ -193,4 +196,28 @@ TEST_CASE("default special functions")
 
     Data arg_ds{"arg_ds", {74, 6, 456, 56}};
     DataSet ds4(999, "DataSet#2", arg_ds);
+}
+
+void foo(int arg) noexcept
+{}
+
+void bar(int arg)
+{
+}
+
+static_assert(!std::is_same_v<decltype(foo), decltype(bar)>);
+
+TEST_CASE("noexcept")
+{
+    std::vector<Data> vec;
+    vec.push_back(create_data_set());
+
+    for(int i = 0; i < 10; ++i)
+    {
+        std::cout << "-------------\n";
+        vec.push_back(create_data_set());
+    }
+
+    void (*ptr_fun1)(int) = foo;   
+    // void (*ptr_fun2)(int) noexcept = bar; // ERROR
 }

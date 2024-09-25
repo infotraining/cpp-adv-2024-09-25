@@ -14,7 +14,7 @@ namespace Explain
         T* object_ptr;
 
     public:
-        explicit UniquePtr(T* object)
+        explicit UniquePtr(T* object) noexcept
             : object_ptr{object}
         {
         }
@@ -23,14 +23,14 @@ namespace Explain
         UniquePtr& operator=(const UniquePtr& other) = delete;
 
         // move constructor
-        UniquePtr(UniquePtr&& other)
+        UniquePtr(UniquePtr&& other) noexcept
             : object_ptr{other.object_ptr}
         {
             other.object_ptr = nullptr;
         }
 
         // move assignment operator
-        UniquePtr& operator=(UniquePtr&& other)
+        UniquePtr& operator=(UniquePtr&& other) noexcept
         {
             if (this != &other)
             {
@@ -43,27 +43,27 @@ namespace Explain
             return *this;
         }
 
-        ~UniquePtr()
+        ~UniquePtr() noexcept
         {
             delete object_ptr;
         }
 
-        explicit operator bool() const
+        explicit operator bool() const noexcept
         {
             return object_ptr != nullptr;
         }
 
-        T& operator*() const
+        T& operator*() const noexcept
         {
             return *object_ptr;
         }
 
-        T* operator->() const
+        T* operator->() const noexcept
         {
             return object_ptr;
         }
 
-        T* get() const
+        T* get() const noexcept
         {
             return object_ptr;
         }
