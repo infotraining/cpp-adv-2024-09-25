@@ -126,7 +126,7 @@ TEST_CASE("std::move")
 
         int y = std::move(x);  // copy
         REQUIRE(x == y);
-        
+
         int* ptr2 = std::move(ptr1); // copy
         REQUIRE(ptr1 == ptr2);
     }

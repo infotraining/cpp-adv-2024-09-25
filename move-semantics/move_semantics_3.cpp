@@ -55,7 +55,7 @@ public:
         other.data_ = nullptr;
         other.size_ = 0;
 
-        std::cout << "Data=(" << name_ << ": mv)\n";
+        std::cout << "Data(" << name_ << ": mv)\n";
     }
 
     // move assignment
@@ -134,4 +134,60 @@ TEST_CASE("Data & move semantics")
 
     Data ds2 = create_data_set();
     Helpers::print(ds2, "ds2");
+}
+
+namespace RuleOfFive
+{
+    struct DataSet
+    {
+        size_t id_;
+        std::string name_;
+        Data data_;
+
+        DataSet(size_t id, const std::string& name, const Data& data) : id_(id), name_(name), data_(data)
+        {}
+
+        DataSet(const DataSet& other) = default;
+        DataSet& operator=(const DataSet&) = default;
+        DataSet(DataSet&& other) = default;
+        DataSet& operator=(DataSet&& other) = default;
+
+        ~DataSet() {}
+    };
+}
+
+namespace RuleOfZero
+{
+    struct DataSet
+    {
+        size_t id_;
+        std::string name_;
+        Data data_;
+
+        // DataSet(size_t id, const std::string& name, const Data& data) : id_(id), name_(name), data_(data)
+        // {}
+
+        // DataSet(size_t id, const std::string& name, Data&& data) : id_(id), name_(name), data_(std::move(data))
+        // {}
+
+        // DataSet(size_t id, std::string&& name, const Data& data) : id_(id), name_(std::move(name)), data_(data)
+        // {}
+
+        // DataSet(size_t id, std::string&& name, Data&& data) : id_(id), name_(std::move(name)), data_(std::move(data))
+        // {}
+
+        DataSet(size_t id, std::string name, Data data) : id_(id), name_(std::move(name)), data_(std::move(data))
+        {}
+    };
+}
+
+TEST_CASE("default special functions")
+{
+    using namespace RuleOfZero;
+
+    DataSet ds1(665, "DataSet#1", Data("ds1", {1, 2, 3}));
+    std::cout << "----\n";
+    DataSet ds2 = ds1;
+    std::cout << "----\n";
+    DataSet ds3 = std::move(ds2);
 }
