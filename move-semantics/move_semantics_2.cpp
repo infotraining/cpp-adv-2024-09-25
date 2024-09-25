@@ -97,6 +97,7 @@ TEST_CASE("move semantics - unique_ptr")
 
     UniquePtr<Gadget> ptr3{new Gadget{42, "smartwatch"}};
     ptr3->use();
+
     ptr3 = std::move(ptr2); // call of move assignment operator
     ptr3->use();
 
@@ -109,9 +110,33 @@ TEST_CASE("move semantics - unique_ptr")
     gadgets.push_back(create_gadget());
     gadgets.push_back(create_gadget());
 
-    for(const auto& g : gadgets)
+    for (const auto& g : gadgets)
     {
         if (g)
             g->use();
+    }
+}
+
+TEST_CASE("std::move")
+{
+    SECTION("non-class/struct types")
+    {
+        int x = 42;
+        int* ptr1 = &x;
+
+        int y = std::move(x);  // copy
+        REQUIRE(x == y);
+        
+        int* ptr2 = std::move(ptr1); // copy
+        REQUIRE(ptr1 == ptr2);
+    }
+
+    SECTION("class/struct")
+    {
+        std::string str = "text";
+
+        std::string target = std::move(str); // move constructor of string
+        REQUIRE(target == "text");
+        REQUIRE(str.size() == 0);
     }
 }

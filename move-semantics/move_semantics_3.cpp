@@ -28,6 +28,7 @@ public:
         std::cout << "Data(" << name_ << ")\n";
     }
 
+    // copy constructor
     Data(const Data& other)
         : name_(other.name_)
         , size_(other.size_)
@@ -37,6 +38,7 @@ public:
         std::copy(other.begin(), other.end(), data_);
     }
 
+    // copy copy assignment
     Data& operator=(const Data& other)
     {
         Data temp(other);
@@ -47,7 +49,38 @@ public:
         return *this;
     }
 
-    // TODO: move semantics
+    // move constructor
+    Data(Data&& other) : name_(std::move(other.name_)), data_(other.data_), size_(other.size_)
+    {
+        other.data_ = nullptr;
+        other.size_ = 0;
+
+        std::cout << "Data=(" << name_ << ": mv)\n";
+    }
+
+    // move assignment
+    Data& operator=(Data&& other)
+    {
+        if (this != &other)
+        {
+            delete[] data_;
+
+            // transfer of name_
+            name_ = std::move(other.name_);
+            
+            // transfer of data_
+            data_ = other.data_;
+            other.data_ = nullptr;
+            
+            // transfer of size_
+            size_ = other.size_;
+            other.size_ = 0;
+        }
+
+        std::cout << "Data=(" << name_ << ": mv)\n";
+
+        return *this;
+    }
 
     ~Data()
     {
@@ -95,4 +128,10 @@ TEST_CASE("Data & move semantics")
 
     Data backup = ds1; // copy
     Helpers::print(backup, "backup");
+
+    Data target = std::move(ds1);
+    Helpers::print(target, "target");
+
+    Data ds2 = create_data_set();
+    Helpers::print(ds2, "ds2");
 }
