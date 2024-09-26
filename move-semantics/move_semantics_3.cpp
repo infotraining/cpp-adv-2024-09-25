@@ -99,8 +99,14 @@ public:
         return data_;
     }
 
+    void may_throw()
+    {
+        throw std::runtime_error("ERROR#13");
+    }
+
     iterator end() noexcept
     {
+        //may_throw(); 
         return data_ + size_;
     }
 
@@ -199,7 +205,8 @@ TEST_CASE("default special functions")
 }
 
 void foo(int arg) noexcept
-{}
+{
+}
 
 void bar(int arg)
 {

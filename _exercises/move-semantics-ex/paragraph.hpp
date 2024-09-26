@@ -15,7 +15,7 @@ namespace LegacyCode
         char* buffer_;
 
     protected:
-        void swap(Paragraph& p)
+        void swap(Paragraph& p) noexcept
         {
             std::swap(buffer_, p.buffer_);
         }
@@ -39,13 +39,14 @@ namespace LegacyCode
             std::strcpy(buffer_, txt);
         }
 
-        Paragraph(Paragraph&& other) : buffer_(std::exchange(other.buffer_, nullptr))
-        {            
+        Paragraph(Paragraph&& other) noexcept 
+            : buffer_(std::exchange(other.buffer_, nullptr))
+        {    
         }
 
-        Paragraph& operator=(Paragraph&& other)
+        Paragraph& operator=(Paragraph&& other) noexcept
         {
-            if(this != &other)
+            if (this != &other)
             {
                 // delete[] buffer_;
                 // buffer_ = std::exchange(other.buffer_, nullptr);
@@ -69,7 +70,7 @@ namespace LegacyCode
             std::strcpy(buffer_, txt);
         }
 
-        const char* get_paragraph() const
+        const char* get_paragraph() const noexcept
         {
             return buffer_;
         }
@@ -79,7 +80,7 @@ namespace LegacyCode
             std::cout << "Rendering text '" << buffer_ << "' at: [" << posx << ", " << posy << "]" << std::endl;
         }
 
-        virtual ~Paragraph()
+        ~Paragraph() noexcept
         {
             delete[] buffer_;
         }

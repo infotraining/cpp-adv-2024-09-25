@@ -14,19 +14,19 @@ using namespace Helpers;
 
 void have_fun(Gadget& g)
 {
-    puts(__PRETTY_FUNCTION__);
+    std::cout << __PRETTY_FUNCTION__ << "\n";
     g.use();
 }
 
 void have_fun(const Gadget& cg)
 {
-    puts(__PRETTY_FUNCTION__);
+    std::cout << __PRETTY_FUNCTION__ << "\n";
     cg.use();
 }
 
 void have_fun(Gadget&& g)
 {
-    puts(__PRETTY_FUNCTION__);
+    std::cout << __PRETTY_FUNCTION__ << "\n";
     g.use();
 }
 
@@ -34,16 +34,19 @@ namespace WithoutPerfectForwarding
 {
     void use(Gadget& g)
     {
+        std::cout << __PRETTY_FUNCTION__ << "\n";
         have_fun(g);
     }
 
     void use(const Gadget& g)
     {
+        std::cout << __PRETTY_FUNCTION__ << "\n";
         have_fun(g);
     }
 
     void use(Gadget&& g)
     {
+        std::cout << __PRETTY_FUNCTION__ << "\n";
         have_fun(std::move(g));
     }
 } // namespace WithoutPerfectForwarding
