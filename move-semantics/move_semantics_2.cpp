@@ -78,12 +78,36 @@ Explain::UniquePtr<Helpers::Gadget> create_gadget()
     return Explain::UniquePtr<Gadget>{new Gadget{id, "Gadget#" + std::to_string(id)}};
 }
 
+namespace Explain
+{
+    template <typename T>
+    UniquePtr<T> make_unique()
+    {
+        return UniquePtr<T>{new T()};
+    }
+
+    template <typename T, typename TArg1>
+    UniquePtr<T> make_unique(TArg1&& arg1)
+    {
+        return UniquePtr<T>{new T(std::forward<TArg1>(arg1))};
+    }
+
+    template <typename T, typename TArg1, typename TArg2>
+    UniquePtr<T> make_unique(TArg1&& arg1, TArg2&& arg2)
+    {
+        return UniquePtr<T>{new T(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2))};
+    }
+}
+
 TEST_CASE("move semantics - unique_ptr")
 {
     using Explain::UniquePtr;
     using Helpers::Gadget;
 
-    UniquePtr<Gadget> ptr1{new Gadget(1, "ipad")};
+    auto ptr0 = Explain::make_unique<Gadget>();
+
+    //UniquePtr<Gadget> ptr1{new Gadget(1, "ipad")};
+    UniquePtr<Gadget> ptr1 = Explain::make_unique<Gadget>(1, "ipad");
     if (ptr1)
     {
         (*ptr1).use();
@@ -95,7 +119,7 @@ TEST_CASE("move semantics - unique_ptr")
         ptr2->use();
     assert(ptr1.get() == nullptr);
 
-    UniquePtr<Gadget> ptr3{new Gadget{42, "smartwatch"}};
+    UniquePtr<Gadget> ptr3 = Explain::make_unique<Gadget>(42, "smartwatch");
     ptr3->use();
 
     ptr3 = std::move(ptr2); // call of move assignment operator

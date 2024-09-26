@@ -51,14 +51,28 @@ namespace WithoutPerfectForwarding
     }
 } // namespace WithoutPerfectForwarding
 
+namespace WithPerfectForwarding 
+{
+    template <typename TGadget>
+    void use(TGadget&& g)
+    {
+        std::cout << __PRETTY_FUNCTION__ << "\n";       
+        have_fun(std::forward<TGadget>(g));
+    }
+}
+
 TEST_CASE("using gadget")
 {
     Gadget g{1, "g"};
     const Gadget cg{2, "const g"};
 
-    using WithoutPerfectForwarding::use;
+    using WithPerfectForwarding::use;
 
+    std::cout << "----\n";
     use(g);
+    std::cout << "----\n";
     use(cg);
+    std::cout << "----\n";
     use(Gadget{3, "temporary gadget"});
+    std::cout << "----\n";
 }
