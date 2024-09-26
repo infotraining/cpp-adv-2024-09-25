@@ -72,23 +72,27 @@ public:
 
 TEST_CASE("using observer pattern")
 {
-    // using namespace std;
+    using namespace std;
 
-    // Subject s;
+    Subject s;
 
-    // ConcreteObserver1* o1 = new ConcreteObserver1;
-    // s.register_observer(o1);
+    auto deregister_observer = [&s](Observer* o) { s.unregister_observer(o); delete o; };
+    using TDeregisterObserver = decltype(deregister_observer);
 
-    // {
-    //     ConcreteObserver2* o2 = new ConcreteObserver2;
-    //     s.register_observer(o2);
+    std::unique_ptr<Observer, TDeregisterObserver> o1{new ConcreteObserver1(), deregister_observer}; 
+    s.register_observer(o1.get());
 
-    //     s.set_state(1);
+    {
+        //ConcreteObserver2* o2 = new ConcreteObserver2;
+        std::shared_ptr<Observer> o2{new ConcreteObserver2(), deregister_observer}; 
+        s.register_observer(o2.get());
 
-    //     delete o2;
+        s.set_state(1);
+        
+        o2.reset();
 
-    //     cout << "End of scope." << endl;
-    // }
+        cout << "End of scope." << endl;
+    }
 
-    // s.set_state(2);
+    s.set_state(2);
 }
