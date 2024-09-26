@@ -185,7 +185,12 @@ namespace RuleOfZero
         // DataSet(size_t id, std::string&& name, Data&& data) : id_(id), name_(std::move(name)), data_(std::move(data))
         // {}
 
-        DataSet(size_t id, std::string name, Data data) : id_(id), name_(std::move(name)), data_(std::move(data))
+        // DataSet(size_t id, std::string name, Data data) : id_(id), name_(std::move(name)), data_(std::move(data))
+        // {}
+        
+        template <typename TStr, typename TData>
+        DataSet(size_t id, TStr&& name, TData&& data) 
+            : id_(id), name_(std::forward<TStr>(name)), data_(std::forward<TData>(data))
         {}
     };
 }
