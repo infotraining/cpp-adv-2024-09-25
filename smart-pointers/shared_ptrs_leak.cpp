@@ -28,30 +28,31 @@ public:
     {
         std::cout << "My name is " << name_ << std::endl;
 
-        if (partner_)
+        std::shared_ptr<Human> living_partner = partner_.lock();
+        if (living_partner)
         {
-            std::cout << "My partner is " << partner_->name_ << std::endl;
+            std::cout << "My partner is " << living_partner->name_ << std::endl;
         }
     }
 
 private:
-    std::shared_ptr<Human> partner_;
+    std::weak_ptr<Human> partner_;
     std::string name_;
 };
 
 TEST_CASE("shared_ptrs leak - circular dependency")
 {
-    // RC husband == 1
-    auto husband = std::make_shared<Human>("Jan");
+    // RC partner1 == 1
+    auto partner1 = std::make_shared<Human>("Jan");
 
-    // RC wife == 1
-    auto wife = std::make_shared<Human>("Ewa");
+    // RC partner2 == 1
+    auto partner2 = std::make_shared<Human>("Ewa");
 
-    // RC wife ==2
-    husband->set_partner(wife);
+    // RC partner2 ==2
+    partner1->set_partner(partner2);
 
-    // RC husband == 2
-    wife->set_partner(husband);
+    // RC partner2 == 2
+    partner2->set_partner(partner1);
 
-    husband->description();
+    partner1->description();
 }

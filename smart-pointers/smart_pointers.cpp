@@ -3,6 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
 #include <vector>
+#include <map>
 
 using Helpers::Gadget;
 
@@ -46,31 +47,31 @@ TEST_CASE("legacy hell with dynamic memory")
 {
     using namespace LegacyCode;
 
-    {
-        Gadget* g = get_gadget("ipad");
+    // {
+    //     Gadget* g = get_gadget("ipad");
 
-        use_gadget(g);
-    } // memory leak
+    //     use_gadget(g);
+    // } // memory leak
 
-    {
-        use_gadget(get_gadget("ipad"));
-    } // memory leak
+    // {
+    //     use_gadget(get_gadget("ipad"));
+    // } // memory leak
 
-    {
-        Gadget* g = new Gadget(13, "ipad");
+    // {
+    //     Gadget* g = new Gadget(13, "ipad");
 
-        use(g);
-        // use_gadget(g);  // UB!!! - use after delete
-        // std::cout << g->name() << std::endl; // UB!!! - use after delete
-    }
+    //     use(g);
+    //     // use_gadget(g);  // UB!!! - use after delete
+    //     // std::cout << g->name() << std::endl; // UB!!! - use after delete
+    // }
 
-    {
-        Gadget* g = get_gadget("ipad");
+    // {
+    //     Gadget* g = get_gadget("ipad");
 
-        use(g);
+    //     use(g);
 
-        delete g; // UB!!! - second delete
-    }
+    //     delete g; // UB!!! - second delete
+    // }
 }
 
 namespace ModernCpp
@@ -171,4 +172,72 @@ TEST_CASE("T[] specialization")
 {
     std::unique_ptr<int[]> buffer{LegacyCode::create_buffer()};
     buffer[512] = 42;
-} // delete[]
+}
+
+TEST_CASE("shared_ptr")
+{
+    std::map<std::string, std::shared_ptr<Gadget>> gadgets;
+
+    {
+        auto g1 = std::make_shared<Gadget>(1, "ipad");
+        REQUIRE(g1.use_count() == 1);
+        
+        auto g2 = g1;
+        REQUIRE(g2.use_count() == 2);
+
+        gadgets.emplace("ipad", g1);
+        REQUIRE(g2.use_count() == 3);
+    }
+
+    gadgets["ipad"]->use();
+
+    gadgets.clear();
+}
+
+
+struct Good : std::enable_shared_from_this<Good>
+{
+    std::string name;
+
+    Good(std::string n) : name(std::move(n))
+    {        
+    }
+
+    std::shared_ptr<Good> get_sptr()
+    {
+        return shared_from_this();
+    }
+};
+
+TEST_CASE("enable_shared_from_this")
+{
+    auto ptr = std::make_shared<Good>("object");
+    auto other_ptr = ptr->get_sptr();
+
+    REQUIRE(ptr.use_count() == 2);
+}
+
+class Base
+{
+public:
+    virtual void foo() {}
+    virtual ~Base() = default;
+};
+
+class Derived : public Base
+{
+public:
+    virtual void bar() {}
+};
+
+
+TEST_CASE("casts for shared_ptrs")
+{
+    std::shared_ptr<Base> ptr_base = std::make_shared<Derived>();
+    
+    std::shared_ptr<Derived> ptr_derived = std::dynamic_pointer_cast<Derived>(ptr_base);
+    if (ptr_derived)
+        ptr_derived->bar();
+
+    REQUIRE(ptr_base.use_count() == 2);
+}
