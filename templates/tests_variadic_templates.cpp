@@ -44,7 +44,7 @@ namespace HeadTail
 inline namespace Fold
 {
     template <typename... TValues>
-    auto sum(TValues... values) // (1, 2, 3, 4, 5)
+    constexpr auto sum(const TValues&... values) // (1, 2, 3, 4, 5)
     {
         return (... + values); // fold expression for +
         // return ((((1 + 2) + 3) + 4) + 5);
@@ -82,6 +82,7 @@ TEST_CASE("sum")
 {
     REQUIRE(sum(1, 2, 3, 4) == 10);
     REQUIRE(sum(1, 2, 3, 4, 5) == 15);
+    static_assert(sum(1, 2, 3, 4, 5) == 15);
 }
 
 template <typename F, typename... TArgs>
