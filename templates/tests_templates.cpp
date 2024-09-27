@@ -81,7 +81,7 @@ public:
 };
 
 template <typename T>
-    template <typename TValue>
+template <typename TValue>
 void Stack<T>::push(TValue&& val)
 {
     items_.push_back(std::forward<TValue>(val));
@@ -105,6 +105,101 @@ TEST_CASE("class templates")
 
     REQUIRE(item == 665);
     REQUIRE(stack_int.size() == 1);
+}
+
+template <typename T1, typename T2>
+struct ValuePair
+{
+    T1 first;
+    T2 second;
+
+    ValuePair(T1 fst, T2 snd)
+        : first(fst)
+        , second(snd)
+    { }
+};
+
+TEST_CASE("CTAD - since C++17")
+{
+    ValuePair<int, double> vp1{10, 3.14};
+    ValuePair vp2{10, 31.4}; // ValuePair<int, double>
+
+    std::vector vec = {1, 2, 3, 4}; // std::vector<int>
+}
+
+template <typename T, size_t N>
+struct Array
+{
+    T items_[N];
+
+    using iterator = T*;
+    using const_iterator = const T*;
+    using reference = T&;
+    typedef const T& const_reference;
+
+    size_t size() const
+    {
+        return N;
+    }
+
+    iterator begin()
+    {
+        return items_;
+    }
+
+    iterator end()
+    {
+        return items_ + N;
+    }
+
+    const_iterator begin() const
+    {
+        return items_;
+    }
+
+    const_iterator end() const
+    {
+        return items_ + N;
+    }
+};
+
+// TODO
+namespace Explain
+{
+    template <typename TContainer>
+    size_t size(const TContainer& con)
+    {
+        return con.size();
+    }
+
+    template <typename T, size_t N>
+    size_t size(T(&tab)[N])
+    {
+        return N;
+    }
+}
+
+TEST_CASE("Array - NTTP")
+{
+    SECTION("Array")
+    {
+        Array<int, 10> arr1 = {1, 2, 3, 4, 5};
+
+        for (const auto& item : arr1)
+        {
+            std::cout << item << " ";
+        }
+        std::cout << "\n";
+    }
+
+    SECTION("size")
+    {
+        std::vector<int> vec = {1, 2, 3};
+        REQUIRE(Explain::size(vec) == 3);
+
+        int tab[1024] = {};
+        REQUIRE(Explain::size(tab) == 1024);
+    }
 }
 
 TEST_CASE("template aliases")
