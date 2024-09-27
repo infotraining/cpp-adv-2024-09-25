@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <string_view>
+#include <map>
 
 using Helpers::Gadget;
 using namespace std::literals;
@@ -331,12 +332,23 @@ TEST_CASE("Array - NTTP")
     }
 }
 
+template <typename T>
+using Dictionary = std::map<std::string, T>;
+
+template <size_t N>
+using Buffer = Array<std::byte, N>;
+
 TEST_CASE("template aliases")
 {
-    // TODO
+    Dictionary<int> dict = { {"one", 1}, {"two", 2 } };
+    Buffer<1024> buffer = {};
 }
+
+template<typename T>
+constexpr T pi{3.1415926535897932385};
 
 TEST_CASE("template variables")
 {
-    // TODO
+    std::cout << "pi<double> = " << pi<double> << "\n";
+    std::cout << "pi<float> = " << pi<float> << "\n";
 }
