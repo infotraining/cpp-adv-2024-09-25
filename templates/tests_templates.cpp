@@ -1,10 +1,12 @@
 #include "helpers.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+#include <deque>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
+#include <string_view>
 
 using Helpers::Gadget;
 using namespace std::literals;
@@ -51,10 +53,10 @@ TEST_CASE("function templates")
     REQUIRE(ReturnTypeTrait::maximum<int, double, long>(42, 42.4) == 42.4);
 }
 
-template <typename T>
+template <typename T, typename TContainer = std::vector<T>>
 class Stack
 {
-    std::vector<T> items_;
+    TContainer items_;
 
 public:
     Stack() = default;
@@ -80,22 +82,60 @@ public:
     }
 };
 
-template <typename T>
+template <typename T, typename TContainer>
 template <typename TValue>
-void Stack<T>::push(TValue&& val)
+void Stack<T, TContainer>::push(TValue&& val)
 {
     items_.push_back(std::forward<TValue>(val));
 }
 
-template <typename T>
-void Stack<T>::pop()
+template <typename T, typename TContainer>
+void Stack<T, TContainer>::pop()
 {
     items_.pop_back();
 }
 
+namespace TemplateTemplateParameter
+{
+    template <typename T, template <typename, typename> class Container, typename TAllocator = std::allocator<T>>
+    class Stack
+    {
+        Container<T, TAllocator> items_;
+
+    public:
+        Stack() = default;
+
+        template <typename TValue>
+        void push(TValue&& val)
+        {
+            items_.push_back(std::forward<TValue>(val));
+        }
+
+        T& top()
+        {
+            return items_.back();
+        }
+
+        const T& top() const
+        {
+            return items_.back();
+        }
+
+        void pop()
+        {
+            items_.pop_back();
+        }
+
+        size_t size() const
+        {
+            return items_.size();
+        }
+    };
+} // namespace TemplateTemplateParameter
+
 TEST_CASE("class templates")
 {
-    Stack<int> stack_int;
+    TemplateTemplateParameter::Stack<int, std::deque> stack_int;
     stack_int.push(42);
     stack_int.push(665);
     REQUIRE(stack_int.size() == 2);
@@ -163,9 +203,95 @@ struct Array
     }
 };
 
+namespace Specialization
+{
+    template <typename T>
+    class Holder
+    {
+        T value_;
+    public:
+        Holder(T value) : value_(std::move(value))
+        {
+        }
+
+        T& value()
+        {
+            return value_;
+        }
+
+        const T& value() const
+        {
+            return value_;
+        }
+    };
+
+    template <typename T>
+    class Holder<T*>  // partial specialization of Holder template
+    {
+        std::unique_ptr<T> ptr_;
+    public:
+        explicit Holder(T* ptr) : ptr_{ptr}
+        {}
+
+        T& value()
+        {
+            return *ptr_;
+        }
+
+        const T& value() const
+        {
+            return *ptr_;
+        }
+
+        void reset(T* new_ptr)
+        {
+            ptr_.reset(new_ptr);
+        }
+    };
+
+    template <>
+    class Holder<const char*> // full specialization for const char*
+    {
+        std::string_view value_;
+    public:
+        Holder(const char* cstr) : value_(cstr)
+        {}
+
+        std::string_view value() const
+        {
+            return value_;
+        }
+    };
+}
+
+TEST_CASE("Specialization - class templates")
+{
+    using namespace Specialization;
+
+    Holder<int> v1{42};
+    REQUIRE(v1.value() == 42);
+
+    Holder<int*> v2{new int(665)};
+    REQUIRE(v2.value() == 665);
+
+    Holder<const char*> v3 = "text";
+    REQUIRE(v3.value().size() == 4);
+}
+
 // TODO
 namespace Explain
 {
+    // template <typename TContainer>
+    // size_t size(const TContainer& con)
+    // {
+    //     // 1 - STL containers
+    //     return con.size();
+
+    //     // 2 - native arrays
+    //     using TValue = decltype(con[0]); // ???
+    //     return sizeof(con) / sizeof(TValue);
+    // }
+
     template <typename TContainer>
     size_t size(const TContainer& con)
     {
@@ -173,11 +299,11 @@ namespace Explain
     }
 
     template <typename T, size_t N>
-    size_t size(T(&tab)[N])
+    size_t size(T (&tab)[N])
     {
         return N;
     }
-}
+} // namespace Explain
 
 TEST_CASE("Array - NTTP")
 {
@@ -199,6 +325,9 @@ TEST_CASE("Array - NTTP")
 
         int tab[1024] = {};
         REQUIRE(Explain::size(tab) == 1024);
+
+        double dbls[10];
+        static_assert(std::is_same_v<decltype(dbls[0]), double&>);
     }
 }
 
