@@ -80,22 +80,28 @@ Explain::UniquePtr<Helpers::Gadget> create_gadget()
 
 namespace Explain
 {
-    template <typename T>
-    UniquePtr<T> make_unique()
-    {
-        return UniquePtr<T>{new T()};
-    }
+    // template <typename T>
+    // UniquePtr<T> make_unique()
+    // {
+    //     return UniquePtr<T>{new T()};
+    // }
 
-    template <typename T, typename TArg1>
-    UniquePtr<T> make_unique(TArg1&& arg1)
-    {
-        return UniquePtr<T>{new T(std::forward<TArg1>(arg1))};
-    }
+    // template <typename T, typename TArg1>
+    // UniquePtr<T> make_unique(TArg1&& arg1)
+    // {
+    //     return UniquePtr<T>{new T(std::forward<TArg1>(arg1))};
+    // }
 
-    template <typename T, typename TArg1, typename TArg2>
-    UniquePtr<T> make_unique(TArg1&& arg1, TArg2&& arg2)
+    // template <typename T, typename TArg1, typename TArg2>
+    // UniquePtr<T> make_unique(TArg1&& arg1, TArg2&& arg2)
+    // {
+    //     return UniquePtr<T>{new T(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2))};
+    // }
+
+    template <typename T, typename... TArgs>
+    UniquePtr<T> make_unique(TArgs&&... args)
     {
-        return UniquePtr<T>{new T(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2))};
+        return UniquePtr<T>{new T(std::forward<TArgs>(args)...)};
     }
 }
 
@@ -139,6 +145,10 @@ TEST_CASE("move semantics - unique_ptr")
         if (g)
             g->use();
     }
+
+    std::vector<Gadget> gs;
+    gs.push_back(Gadget{1, "ipad"});
+    gs.emplace_back(42, "ipad");
 }
 
 TEST_CASE("std::move")

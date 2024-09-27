@@ -65,6 +65,12 @@ public:
     template <typename TValue>
     void push(TValue&& val);
 
+    template <typename... TArgs>
+    void emplace(TArgs&&... args)
+    {
+        items_.emplace_back(std::forward<TArgs>(args)...);
+    }
+
     T& top()
     {
         return items_.back();
@@ -146,6 +152,9 @@ TEST_CASE("class templates")
 
     REQUIRE(item == 665);
     REQUIRE(stack_int.size() == 1);
+
+    Stack<Gadget> stack_gadgets;
+    stack_gadgets.emplace(42, "smartwatch");
 }
 
 template <typename T1, typename T2>
@@ -282,28 +291,31 @@ TEST_CASE("Specialization - class templates")
 // TODO
 namespace Explain
 {
-    // template <typename TContainer>
-    // size_t size(const TContainer& con)
-    // {
-    //     // 1 - STL containers
-    //     return con.size();
-
-    //     // 2 - native arrays
-    //     using TValue = decltype(con[0]); // ???
-    //     return sizeof(con) / sizeof(TValue);
-    // }
-
     template <typename TContainer>
     size_t size(const TContainer& con)
     {
-        return con.size();
+        if constexpr(std::is_array_v<TContainer>)
+        {
+            using TValue = std::remove_reference_t<decltype(con[0])>; 
+            return sizeof(con) / sizeof(TValue);
+        }
+        else
+        {
+            return con.size();
+        }
     }
 
-    template <typename T, size_t N>
-    size_t size(T (&tab)[N])
-    {
-        return N;
-    }
+    // template <typename TContainer>
+    // size_t size(const TContainer& con)
+    // {
+    //     return con.size();
+    // }
+
+    // template <typename T, size_t N>
+    // size_t size(T (&tab)[N])
+    // {
+    //     return N;
+    // }
 } // namespace Explain
 
 TEST_CASE("Array - NTTP")

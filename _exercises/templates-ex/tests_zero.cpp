@@ -74,6 +74,8 @@ namespace Exercise
             using TValue = std::remove_reference_t<decltype(*std::begin(container))>;            
 
             std::fill(std::begin(container), std::end(container), TValue{});
+
+            // memset - for native tables & POD types ???
         }
     } // namespace Ver_3
 

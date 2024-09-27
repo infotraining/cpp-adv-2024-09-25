@@ -167,8 +167,6 @@ public:
     }
 };
 
-
-
 TEST_CASE("using policies - Policy Based Design")
 {
     Vector<int, ThrowingRangeChecker> vec_1 = {1, 2, 3};
