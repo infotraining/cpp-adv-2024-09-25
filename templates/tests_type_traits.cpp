@@ -91,3 +91,33 @@ TEST_CASE("type traits")
     static_assert(IsPointer<int*>::value == true);
     static_assert(IsPointer_v<const std::string*> == true);
 }
+
+////////////////////////////////////////
+
+template <typename T>
+struct RemoveReference
+{
+    using type = T;
+};
+
+template <typename T>
+struct RemoveReference<T&>
+{
+    using type = T;
+};
+
+template <typename T>
+struct RemoveReference<T&&>
+{
+    using type = T;
+};
+
+template <typename T>
+using RemoveReference_t = typename RemoveReference<T>::type;
+
+TEST_CASE("RemoveReference")
+{
+    static_assert(IsSame_v<RemoveReference<int>::type, int>);
+    static_assert(IsSame_v<RemoveReference_t<int&>, int>);
+    static_assert(IsSame_v<RemoveReference_t<int&&>, int>);
+}

@@ -46,7 +46,7 @@ namespace Exercise
         }
     } // namespace Ver_2
 
-    inline namespace Ver_3
+    namespace Ver_3
     {
         template <typename TContainer>
         void zero(TContainer& container)
@@ -65,6 +65,18 @@ namespace Exercise
             }
         }
     } // namespace Ver_3
+
+    inline namespace Ver_4
+    {
+        template <typename TContainer>
+        void zero(TContainer& container)
+        {
+            using TValue = std::remove_reference_t<decltype(*std::begin(container))>;            
+
+            std::fill(std::begin(container), std::end(container), TValue{});
+        }
+    } // namespace Ver_3
+
 
 } // namespace Exercise
 
