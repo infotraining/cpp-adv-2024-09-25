@@ -29,6 +29,28 @@ namespace SinceCpp17
     }
 } // namespace SinceCpp17
 
+namespace HeadTail
+{
+    template <typename Head, typename... Tail>
+    auto sum(const Head& head, const Tail&... tail)
+    {
+        if constexpr (sizeof...(tail) > 0)
+            return head + sum(tail...);
+        else
+            return head;
+    }
+} // namespace HeadTail
+
+inline namespace Fold
+{
+    template <typename... TValues>
+    auto sum(TValues... values) // (1, 2, 3, 4, 5)
+    {
+        return (... + values); // fold expression for +
+        // return ((((1 + 2) + 3) + 4) + 5);
+    }
+}
+
 /////////////////////////////////////////////////
 
 template <typename... Types>
@@ -52,4 +74,25 @@ TEST_CASE("variadic templates")
     print("abc", std::string("def"));
 
     static_assert(Count<int, short, double>::value == 3);
+}
+
+// TODO
+
+TEST_CASE("sum")
+{
+    REQUIRE(sum(1, 2, 3, 4) == 10);
+    REQUIRE(sum(1, 2, 3, 4, 5) == 15);
+}
+
+template <typename F, typename... TArgs>
+void call_for_all(F f, TArgs&&... args)
+{
+    (..., f(std::forward<TArgs>(args))); // fold for ,
+}
+
+TEST_CASE("call_for_all")
+{
+    auto printer = [](const auto& item) { std::cout << "item: " << item << "\n"; };
+
+    call_for_all(printer, 1, 3.14, "text");
 }
