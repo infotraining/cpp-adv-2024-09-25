@@ -351,4 +351,6 @@ TEST_CASE("template variables")
 {
     std::cout << "pi<double> = " << pi<double> << "\n";
     std::cout << "pi<float> = " << pi<float> << "\n";
+
+    static_assert(sizeof(pi<double>) != sizeof(pi<float>));
 }
